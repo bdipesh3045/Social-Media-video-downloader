@@ -22,5 +22,5 @@ def download_reel(reel_url):
 
 
 # Example URL of the reel
-reel_url = ""
+reel_url = "https://www.facebook.com/reel/722578529952395"
 download_reel(reel_url)
