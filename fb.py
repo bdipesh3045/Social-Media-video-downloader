@@ -76,7 +76,14 @@ def download_facebook_reel(video_url):
     return msg
 
 
-# Example URL of the Facebook reel video
-reel_url = "https://www.facebook.com/reel/"
-result = download_facebook_reel(reel_url)
-print(result)
+def fbreel(link):
+    result = download_facebook_reel(link)
+    link = result.get("links")
+
+    if link.get("hd_quality"):
+        down = link.get("hd_quality")
+    else:
+        down = link.get("sd_quality")
+
+
+print(fbreel("https://www.facebook.com/reel/7706196066086224"))
