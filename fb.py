@@ -84,6 +84,18 @@ def fbreel(link):
         down = link.get("hd_quality")
     else:
         down = link.get("sd_quality")
+    filename = f"""fb/{result.get("id")}.mp4"""
+
+    # Download the video
+    video_response = requests.get(down, stream=True)
+    if video_response.status_code == 200:
+        with open(filename, "wb") as f:
+            for chunk in video_response.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+        print(f"Video saved as {filename}")
+    else:
+        print("Failed to download video")
 
 
-print(fbreel("https://www.facebook.com/reel/7706196066086224"))
+fbreel("https://www.facebook.com/reel/7706196066086224")
