@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from urllib.request import urlopen
 
 
-def download(link):
+def download_tiktok(link):
 
     headers = {
         "Accept": "*/*",
@@ -48,7 +48,7 @@ def download(link):
     print("STEP 5: Saving the video :)")
     mp4File = urlopen(downloadLink)
     # Feel free to change the download directory
-    with open(f"videos/main.mp4", "wb") as output:
+    with open(f"tiktok/main.mp4", "wb") as output:
         while True:
             data = mp4File.read(4096)
             if data:
@@ -57,4 +57,4 @@ def download(link):
                 break
 
 
-download("https://www.tiktok.com/@rohit_editz14/video/7364208916231671057")
+download_tiktok("https://www.tiktok.com/@rohit_editz14/video/7364208916231671057")

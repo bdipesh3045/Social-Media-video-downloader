@@ -1,3 +1,4 @@
 *.env
 *.sqlite3
 *.json
+*.mp4
