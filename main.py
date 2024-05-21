@@ -2,10 +2,11 @@ import requests
 import re
 import json
 import requests
-import instaloader
 import os
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
+import io
+import uuid
 
 
 # Function to extract text from JSON string
@@ -84,41 +85,78 @@ def fbreel(link):
         down = link.get("hd_quality")
     else:
         down = link.get("sd_quality")
-    filename = f"""fb/{result.get("id")}.mp4"""
+    filename = f"""{result.get("id")}.mp4"""
 
-    # Download the video
-    video_response = requests.get(down, stream=True)
-    if video_response.status_code == 200:
-        with open(filename, "wb") as f:
-            for chunk in video_response.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-        print(f"Video saved as {filename}")
-    else:
-        print("Failed to download video")
+    mp4File = urlopen(down)
+    # Feel free to change the download directory
 
+    video_data = io.BytesIO()
 
-# Function to download reel
-def download_reel(reel_url):
-    # Initialize Instaloader
-    loader = instaloader.Instaloader()
-    try:
-        # Download the reel using its URL
-        loader.download_post(
-            instaloader.Post.from_shortcode(loader.context, reel_url.split("/")[-2]),
-            target="reels",
-        )
-        for filename in os.listdir("reels"):
-            if not filename.endswith(".mp4"):
-                os.remove(os.path.join("reels", filename))
-        print("Reel downloaded successfully!")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    while True:
+        data = mp4File.read(4096)
+        if data:
+            video_data.write(data)
+        else:
+            break
+
+    video_data.seek(0)  # Rewind the BytesIO object to the beginning
+
+    return (video_data.getvalue(), filename)
 
 
-# Example URL of the reel
+def insta_reel(link):
+    unique_id = uuid.uuid4()
 
-# Tiktok
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.6",
+        "Connection": "keep-alive",
+        "Content-Type": "application/json",
+        "Origin": "https://fastdl.app",
+        "Referer": "https://fastdl.app/en",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-GPC": "1",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+        "sec-ch-ua": '"Brave";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+    }
+
+    json_data = {
+        "url": link,
+        "ts": 1716280023993,
+        "_ts": 1716211953367,
+        "_tsc": 4823488,
+        "_s": "42f23d0164b9af7e9dd682f36b1f5099afa87caa0a1693fca5f3c54f8b171714",
+    }
+
+    response = requests.post(
+        "https://fastdl.app/api/convert", headers=headers, json=json_data
+    )
+
+    main_link = dict(response.json())
+
+    down_link = main_link["url"][0]["url"]
+
+    mp4File = urlopen(down_link)
+    # Feel free to change the download directory
+
+    video_data = io.BytesIO()
+
+    while True:
+        data = mp4File.read(4096)
+        if data:
+            video_data.write(data)
+        else:
+            break
+
+    video_data.seek(0)  # Rewind the BytesIO object to the beginning
+
+    # Send the video
+    video_filename = f"{unique_id}.mp4"
+    return (video_data.getvalue(), video_filename)
 
 
 def download_tiktok(link):
@@ -169,23 +207,17 @@ def download_tiktok(link):
     print("STEP 5: Saving the video :)")
     mp4File = urlopen(downloadLink)
     # Feel free to change the download directory
-    with open(f"tiktok/{video_id}.mp4", "wb") as output:
-        while True:
-            data = mp4File.read(4096)
-            if data:
-                output.write(data)
-            else:
-                break
 
+    video_data = io.BytesIO()
 
-def main(url):
-    if "tiktok" in url:
-        download_tiktok(url)
-    elif "instagram" in url:
-        download_reel(url)
-    elif "facebook" in url:
-        fbreel(url)
+    while True:
+        data = mp4File.read(4096)
+        if data:
+            video_data.write(data)
+        else:
+            break
 
+    video_data.seek(0)  # Rewind the BytesIO object to the beginning
 
-for i in range(3):
-    main(input("Enter the URL: "))
+    video_filename = f"{video_id}.mp4"
+    return (video_data.getvalue(), video_filename)
