@@ -12,7 +12,6 @@ Utilize the  sstk and fastdl website api which can be found using network inspec
 
 ## 🚀 Key Features
 - All different platform videos will be grouped together in different subchannels.
-- Seamless conversion of web content into eBooks.
 - Can be easily deployed on free platform [render](https://.render.com) 
 
 ## 🛠️ Technical Details
