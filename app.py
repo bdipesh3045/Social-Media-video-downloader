@@ -1,9 +1,5 @@
-import csv
-import pandas as pd
-import threading
-import time
-from datetime import datetime
-from bs4 import BeautifulSoup
+from flask import Flask, request
+
 import requests
 from dotenv import load_dotenv
 from main import download_tiktok, insta_reel, fbreel
@@ -16,34 +12,7 @@ base_url = f"""https://api.telegram.org/bot{os.getenv("tg")}"""
 
 url = f"""https://api.telegram.org/bot{os.getenv("tg")}/getUpdates"""
 
-
-def update():
-    resp = requests.get(url)
-    data = resp.json()
-    length = len(data["result"])
-    # print(length)
-    info = {}
-    for p in data["result"][length - 1]["message"]:
-        if p == "message_id" or p == "text":
-            info[p] = data["result"][length - 1]["message"][p]
-            # print(f"{p}:{data['result'][0]['message'][p]}")
-        if p == "chat" or p == "from":
-            for c in data["result"][length - 1]["message"][p]:
-                # print(f"{c}:{data['result'][0]['message'][p][c]}")
-                info[c] = data["result"][length - 1]["message"][p][c]
-    return info
-
-
-y = update()
-
-initial = y["message_id"]
-
-
-# Create a new thread and run the remove_files function in it
-
-# thread = threading.Thread(target=counter)
-# thread.start()
-
+app = Flask(__name__)
 
 def main_msg(link_social):
     fb = os.getenv("fb")
@@ -88,13 +57,28 @@ def main_msg(link_social):
         print(resp.text)
 
 
-while True:
-    print("Waiting for messages.....")
-    got = update()
+@app.route("/setwebhook", methods=["GET", "POST"])
+def hook():
 
-    checker = got["message_id"]
-    if initial != checker:
-        initial = checker
-        main_msg(got["text"])
-        print(got["text"])
-    time.sleep(1)
+    if request.method == "POST":
+        try:
+            # Handle POST request
+
+            data = request.data
+            data_dict = json.loads(data.decode("utf-8"))
+
+            value = data_dict["message"]["text"]
+            main_msg(value)
+   
+            return "Done"
+        except Exception as e:
+            # SO that the function gives the telegram webhook response 200 otherwise it will tray again and dont allow other messages to be processes which will freeze the system
+            return "Done"
+    return "This is a GET request"
+
+
+@app.route("/")
+def home():
+    return "Hello. I am working"
+
+
